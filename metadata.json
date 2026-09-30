@@ -1,0 +1,6 @@
+{
+  "name": "Smart Agriculture Platform for Farmers",
+  "description": "A personalized digital platform combining AI crop analysis, weather intelligence, water management, government-scheme discovery, and a local farmer marketplace.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,135 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: default-deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Test connection probe
+    match /test/{testId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    function isValidMarketplaceListing(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.category is string
+        && data.price is string && data.price.size() <= 100
+        && data.sellerName is string && data.sellerName.size() <= 150
+        && (!('description' in data) || (data.description is string && data.description.size() <= 3000))
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1048576))
+        && (!('sellerPhone' in data) || (data.sellerPhone is string && data.sellerPhone.size() <= 50))
+        && (!('sellerVillage' in data) || (data.sellerVillage is string && data.sellerVillage.size() <= 200))
+        && (!('quantity' in data) || (data.quantity is string && data.quantity.size() <= 100))
+        && (!('distanceKm' in data) || (data.distanceKm is number))
+        && (!('tags' in data) || (data.tags is list && data.tags.size() <= 20))
+        && (!('ownerId' in data) || (data.ownerId is string && (!isSignedIn() || data.ownerId == request.auth.uid)))
+        && (!('createdAt' in data) || (data.createdAt is string));
+    }
+
+    match /marketplace_listings/{listingId} {
+      allow read: if true;
+      allow create: if isValidId(listingId) && isValidMarketplaceListing(incoming()) && (
+        !('ownerId' in incoming()) || !isSignedIn() || incoming().ownerId == request.auth.uid
+      );
+      allow update: if isValidId(listingId) && isValidMarketplaceListing(incoming()) && (
+        !('ownerId' in existing()) || !isSignedIn() || existing().ownerId == request.auth.uid
+      );
+      allow delete: if isValidId(listingId) && (
+        !('ownerId' in existing()) || !isSignedIn() || existing().ownerId == request.auth.uid
+      );
+    }
+
+    function isValidUser(data) {
+      return (!('uid' in data) || (data.uid is string && data.uid.size() <= 128))
+        && (!('id' in data) || (data.id is string && data.id.size() <= 128))
+        && (!('email' in data) || (data.email is string && data.email.size() <= 200))
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 150))
+        && (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 1048576))
+        && (!('createdAt' in data) || (data.createdAt is string))
+        && (!('updatedAt' in data) || (data.updatedAt is string));
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if isValidId(userId) && isValidUser(incoming()) && (
+        !isSignedIn() || request.auth.uid == userId
+      );
+      allow delete: if isValidId(userId) && (
+        !isSignedIn() || request.auth.uid == userId
+      );
+    }
+
+    function isValidFarmerProfile(data) {
+      return (!('userId' in data) || (data.userId is string && data.userId.size() <= 128))
+        && (!('name' in data) || (data.name is string && data.name.size() <= 150))
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 50))
+        && (!('village' in data) || (data.village is string && data.village.size() <= 150))
+        && (!('district' in data) || (data.district is string && data.district.size() <= 150))
+        && (!('state' in data) || (data.state is string && data.state.size() <= 150))
+        && (!('latitude' in data) || (data.latitude is string && data.latitude.size() <= 50))
+        && (!('longitude' in data) || (data.longitude is string && data.longitude.size() <= 50))
+        && (!('landAreaAcres' in data) || (data.landAreaAcres is string && data.landAreaAcres.size() <= 50))
+        && (!('soilType' in data) || (data.soilType is string && data.soilType.size() <= 100))
+        && (!('primaryCrop' in data) || (data.primaryCrop is string && data.primaryCrop.size() <= 100))
+        && (!('cropStage' in data) || (data.cropStage is string && data.cropStage.size() <= 100))
+        && (!('waterSource' in data) || (data.waterSource is string && data.waterSource.size() <= 100))
+        && (!('irrigationType' in data) || (data.irrigationType is string && data.irrigationType.size() <= 100))
+        && (!('farmerCategory' in data) || (data.farmerCategory is string && data.farmerCategory.size() <= 100))
+        && (!('createdAt' in data) || (data.createdAt is string))
+        && (!('updatedAt' in data) || (data.updatedAt is string));
+    }
+
+    // Farmer profiles collection
+    match /farmer_profiles/{profileId} {
+      allow read: if true;
+      allow create, update: if isValidId(profileId) && isValidFarmerProfile(incoming()) && (
+        !isSignedIn() || request.auth.uid == profileId || (!('userId' in incoming()) || incoming().userId == request.auth.uid)
+      );
+      allow delete: if isValidId(profileId) && (
+        !isSignedIn() || request.auth.uid == profileId
+      );
+    }
+
+    function isValidCropAnalysis(data) {
+      return (!('id' in data) || (data.id is string && data.id.size() <= 128))
+        && (!('userId' in data) || data.userId == null || (data.userId is string && data.userId.size() <= 128))
+        && (!('cropName' in data) || (data.cropName is string && data.cropName.size() <= 200))
+        && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1048576))
+        && (!('identifiedCrop' in data) || (data.identifiedCrop is string && data.identifiedCrop.size() <= 200))
+        && (!('condition' in data) || (data.condition is string && data.condition.size() <= 200))
+        && (!('severity' in data) || (data.severity is string && data.severity.size() <= 100))
+        && (!('confidencePercentage' in data) || (data.confidencePercentage is number))
+        && (!('symptomsJson' in data) || (data.symptomsJson is string && data.symptomsJson.size() <= 50000))
+        && (!('remediesJson' in data) || (data.remediesJson is string && data.remediesJson.size() <= 50000))
+        && (!('summary' in data) || (data.summary is string && data.summary.size() <= 10000))
+        && (!('createdAt' in data) || (data.createdAt is string));
+    }
+
+    // Crop analyses historical records
+    match /crop_analyses/{analysisId} {
+      allow read: if true;
+      allow create, update: if isValidId(analysisId) && isValidCropAnalysis(incoming()) && (
+        !isSignedIn() || (!('userId' in incoming()) || incoming().userId == null || incoming().userId == request.auth.uid)
+      );
+      allow delete: if isValidId(analysisId) && (
+        !isSignedIn() || (!('userId' in existing()) || existing().userId == null || existing().userId == request.auth.uid)
+      );
+    }
+  }
+}

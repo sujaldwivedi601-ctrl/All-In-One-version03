@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "E-Farmer Smart Agriculture Platform",
+  "short_name": "E-Farmer",
+  "description": "Personalized digital agriculture platform for crop leaf diagnosis, weather intelligence, and farm management.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F8FAF6",
+  "theme_color": "#15803d",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

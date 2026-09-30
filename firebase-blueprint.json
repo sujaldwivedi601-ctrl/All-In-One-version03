@@ -1,0 +1,164 @@
+{
+  "entities": {
+    "MarketplaceListing": {
+      "title": "MarketplaceListing",
+      "description": "An agricultural marketplace product or listing offered by a local farmer.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the listing",
+          "maxLength": 150
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of agricultural item",
+          "enum": ["Produce", "Equipment", "Waste Exchange", "Seeds & Inputs"]
+        },
+        "price": {
+          "type": "string",
+          "description": "Price with unit",
+          "maxLength": 80
+        },
+        "quantity": {
+          "type": "string",
+          "description": "Available quantity",
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of item",
+          "maxLength": 2000
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Image URL or data URI",
+          "maxLength": 500000
+        },
+        "sellerName": {
+          "type": "string",
+          "description": "Name of the seller",
+          "maxLength": 100
+        },
+        "sellerPhone": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 35
+        },
+        "sellerVillage": {
+          "type": "string",
+          "description": "Village or town of seller",
+          "maxLength": 150
+        },
+        "distanceKm": {
+          "type": "number",
+          "description": "Approximate distance in kilometers"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags associated with the listing"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "UID of the seller"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp or server timestamp"
+        }
+      },
+      "required": ["title", "category", "price", "sellerName"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User account information synchronized from Firebase Auth.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "photoUrl": { "type": "string", "description": "User photo URL" },
+        "createdAt": { "type": "string", "description": "Account creation timestamp" }
+      },
+      "required": ["uid"]
+    },
+    "FarmerProfile": {
+      "title": "FarmerProfile",
+      "description": "Agricultural farmer profile with land and agronomic configuration.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the farmer" },
+        "name": { "type": "string", "description": "Farmer or farm name" },
+        "phone": { "type": "string", "description": "Farmer contact phone" },
+        "village": { "type": "string", "description": "Village name" },
+        "district": { "type": "string", "description": "District name" },
+        "state": { "type": "string", "description": "State name" },
+        "latitude": { "type": "string", "description": "GPS Latitude coordinate" },
+        "longitude": { "type": "string", "description": "GPS Longitude coordinate" },
+        "landAreaAcres": { "type": "string", "description": "Cultivable land area in acres" },
+        "soilType": { "type": "string", "description": "Soil texture type" },
+        "primaryCrop": { "type": "string", "description": "Primary crop grown" },
+        "cropStage": { "type": "string", "description": "Growth stage of crop" },
+        "waterSource": { "type": "string", "description": "Irrigation source" },
+        "irrigationType": { "type": "string", "description": "Irrigation method" },
+        "farmerCategory": { "type": "string", "description": "Category: Marginal, Small, Medium, Large" }
+      },
+      "required": ["userId", "name"]
+    },
+    "CropAnalysis": {
+      "title": "CropAnalysis",
+      "description": "AI-powered botanical and clinical crop disease diagnosis record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Analysis ID" },
+        "userId": { "type": "string", "description": "UID of farmer" },
+        "cropName": { "type": "string", "description": "Crop name" },
+        "imageUrl": { "type": "string", "description": "Analyzed leaf photo" },
+        "identifiedCrop": { "type": "string", "description": "Identified crop by AI" },
+        "condition": { "type": "string", "description": "Diagnosed condition" },
+        "severity": { "type": "string", "description": "Severity level" },
+        "confidencePercentage": { "type": "number", "description": "AI diagnostic confidence" },
+        "symptomsJson": { "type": "string", "description": "Detected symptoms JSON" },
+        "remediesJson": { "type": "string", "description": "Remedies and actions JSON" },
+        "summary": { "type": "string", "description": "Summary advice" },
+        "createdAt": { "type": "string", "description": "Analysis timestamp" }
+      },
+      "required": ["cropName", "condition"]
+    },
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "Used to verify connection to Firestore database.",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Connection test status"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/marketplace_listings/{listingId}": {
+      "schema": "MarketplaceListing",
+      "description": "Collection of all marketplace products and listings available to farmers."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Synchronized user identity profiles."
+    },
+    "/farmer_profiles/{profileId}": {
+      "schema": "FarmerProfile",
+      "description": "Farmer agronomic and land profiles."
+    },
+    "/crop_analyses/{analysisId}": {
+      "schema": "CropAnalysis",
+      "description": "Historical AI crop diagnostic records."
+    },
+    "/test/{testId}": {
+      "schema": "TestConnection",
+      "description": "Diagnostic collection for testing Firestore connection health."
+    }
+  }
+}
